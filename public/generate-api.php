@@ -66,17 +66,25 @@ class IIP_Map_API_Route extends WP_REST_Controller {
     $events = [];
     foreach ( $list as $row ) {
       $events[] = [
-        'id' => $row->id,
-        'project_id' => $row->project_id,
-        'ext_id' => $row->ext_id,
-        'title' => $row->title,
-        'location' => $row->location,
-        'lat' => $row->lat,
-        'lng' => $row->lng,
-        'fields' => unserialize( $row->fields )
+      	'type' => 'Feature',
+	    'geometry' => [
+          'type' => 'Point',
+	      'coordinates' => [
+	          0 => $row->lng,
+	          1 => $row->lat,
+	      ],
+	    ],
+	    'properties' => [
+	      'id' => $row->id,
+	      'project_id' => $row->project_id,
+	      'ext_id' => $row->ext_id,
+	      'title' => $row->title,
+	      'location' => $row->location,
+	      'fields' => unserialize( $row->fields ),
+	    ],
       ];
     }
-    return $events;
+    return ['type' => 'FeatureCollection', 'features' => $events];
   }
 
   public function prepare_response_for_collection( $response ) {
