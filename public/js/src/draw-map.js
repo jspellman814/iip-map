@@ -65,11 +65,39 @@ map.on( 'load', () => {
       option.innerHTML = layerID;
       option.value = layerID;
       fragment.appendChild( option );
+
+      map.on( 'click', layerID, ( e ) => {
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const fields = e.features[0].properties.fields; // eslint-disable-line prefer-destructuring
+        console.log( fields );
+
+        // Ensure that if the map is zoomed out such that multiple
+        // copies of the feature are visible, the popup appears
+        // over the copy being pointed to.
+        while ( Math.abs( e.lngLat.lng - coordinates[0] ) > 180 ) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        new mapboxgl.Popup( { offset: 25 } )
+          .setLngLat( coordinates )
+          .setHTML( '<div class="post-content ' + title + '"><h3>' + title + '</h3></div>' ) // eslint-disable-line prefer-template
+          .addTo( map );
+      } );
+
+      // Change the cursor to a pointer when the mouse is over the places layer.
+      map.on( 'mouseenter', layerID, () => {
+        map.getCanvas().style.cursor = 'pointer';
+      } );
+
+      // Change it back to a pointer when it leaves.
+      map.on( 'mouseleave', layerID, () => {
+        map.getCanvas().style.cursor = '';
+      } );
     } );
 
     topicSelect.addEventListener( 'change', () => {
       const layerIDArrayLength = layerIDArray.length;
-      console.log(layerIDArrayLength);
+      console.log( layerIDArrayLength );
       for ( let i = 0; i < layerIDArrayLength; i++ ) { // eslint-disable-line no-plusplus
         map.setLayoutProperty( layerIDArray[i], 'visibility', 'visible' );
       }
