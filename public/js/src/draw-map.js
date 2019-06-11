@@ -40,7 +40,6 @@ map.on( 'load', () => {
       const eventID = marker.properties.ext_id;
       const title = marker.properties.title; // eslint-disable-line prefer-destructuring
       const layerID = 'poi-' + eventID; // eslint-disable-line prefer-template
-      console.log( eventID + title ); // eslint-disable-line prefer-template
 
       // Add a layer for this symbol type if it hasn't been added already.
       if ( !map.getLayer( layerID ) ) {
@@ -68,8 +67,16 @@ map.on( 'load', () => {
 
       map.on( 'click', layerID, ( e ) => {
         const coordinates = e.features[0].geometry.coordinates.slice();
-        const fields = e.features[0].properties.fields; // eslint-disable-line prefer-destructuring
-        console.log( fields );
+        const fieldsString = e.features[0].properties.fields; // eslint-disable-line prefer-destructuring
+        const fieldsObj = JSON.parse( fieldsString );
+        const fieldValues = Object.keys( fieldsObj ).map( ( key ) => { // eslint-disable-line arrow-body-style
+          return fieldsObj[key];
+        } );
+
+        const titleField = fieldValues[3];
+        const dateField = fieldValues[0];
+        const timeField = fieldValues[4];
+        console.log( fieldValues );
 
         // Ensure that if the map is zoomed out such that multiple
         // copies of the feature are visible, the popup appears
@@ -80,7 +87,7 @@ map.on( 'load', () => {
 
         new mapboxgl.Popup( { offset: 25 } )
           .setLngLat( coordinates )
-          .setHTML( '<div class="post-content ' + title + '"><h3>' + title + '</h3></div>' ) // eslint-disable-line prefer-template
+          .setHTML( '<div class="post-content ' + titleField + '"><h3>' + titleField + '</h3><p>' + dateField.month + '/' + dateField.day + '/' + dateField.year + '</p><p>' + timeField.hours + ':' + timeField.minutes + ' ' + timeField.am_pm + '</p></div>' ) // eslint-disable-line prefer-template
           .addTo( map );
       } );
 
@@ -97,7 +104,6 @@ map.on( 'load', () => {
 
     topicSelect.addEventListener( 'change', () => {
       const layerIDArrayLength = layerIDArray.length;
-      console.log( layerIDArrayLength );
       for ( let i = 0; i < layerIDArrayLength; i++ ) { // eslint-disable-line no-plusplus
         map.setLayoutProperty( layerIDArray[i], 'visibility', 'visible' );
       }
@@ -127,7 +133,6 @@ map.on( 'load', () => {
       clusterMaxZoom: 14,
       clusterRadius: 50
     } );
-
 
     plotMarkers( mapDataData );
   };
